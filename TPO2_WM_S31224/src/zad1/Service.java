@@ -14,24 +14,43 @@ import com.google.gson.JsonObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.Currency;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class Service {
     String countryName;
+    String countryCode;
+    String currencyCode=null;
     public Service(String countryName) {
         this.countryName = countryName;
+
+        for (Locale availableLocale : Locale.getAvailableLocales()) {
+
+            if (availableLocale.getDisplayCountry(Locale.ENGLISH).equals(countryName)) {
+                try {
+                    currencyCode = Currency.getInstance(availableLocale).getCurrencyCode();
+                    countryCode = availableLocale.getCountry();
+                } catch (Exception e) {
+                    countryCode = availableLocale.getCountry();
+                }
+        }
+            }
+
+
     }
 
     public String getWeather(String city) {
         String json="";
         try(
-                BufferedReader br = new BufferedReader(new InputStreamReader(new URI( "https://api.openweathermap.org/data/2.5/weather?q="+ city+"&appid=a327ae1c7ff2c4596d079738f726bce5").toURL().openStream()))
+                BufferedReader br = new BufferedReader(new InputStreamReader(new URI( "https://api.openweathermap.org/data/2.5/weather?q="+ city + "," + countryCode+"&appid=a327ae1c7ff2c4596d079738f726bce5").toURL().openStream()))
         ){
             json = br.lines().collect(Collectors.joining());
         }
         catch(Exception e){
             e.printStackTrace();
         }
+        System.out.println(json);
         return json;
     }
 
@@ -46,15 +65,19 @@ public class Service {
             e.printStackTrace();
         }
         JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
-
-        return (jsonObject.getAsJsonObject("conversion_rates").get("USD").getAsDouble()); //tutaj cos z locale zeby zamiast "USD" byla waluta dostarczanego panstwa
+        System.out.println(jsonObject);
+        return (jsonObject.getAsJsonObject("conversion_rates").get(currencyCode).getAsDouble());
     }
 
     public double getNBPRate(){
+        System.out.println(currencyCode);
+        if (currencyCode.equals("PLN")) {
+            return 1;
+        }
 
-        String json="";
+        String json = "";
         try(
-                BufferedReader br = new BufferedReader(new InputStreamReader(new URI("https://api.nbp.pl/api/exchangerates/rates/A/USD/").toURL().openStream())) //tutaj cos z locale zeby zamiast "USD" byla waluta dostarczanego panstwa
+                BufferedReader br = new BufferedReader(new InputStreamReader(new URI("https://api.nbp.pl/api/exchangerates/rates/A/" +currencyCode +"/").toURL().openStream())) //tutaj cos z locale zeby zamiast "USD" byla waluta dostarczanego panstwa
         ){
             json = br.lines().collect(Collectors.joining());
         }
@@ -63,6 +86,7 @@ public class Service {
         }
         JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
         JsonArray jsonArray = jsonObject.getAsJsonArray("rates");
+        System.out.println(jsonArray);
         return jsonArray.getAsJsonArray().get(0).getAsJsonObject().get("mid").getAsDouble();
 
     }
