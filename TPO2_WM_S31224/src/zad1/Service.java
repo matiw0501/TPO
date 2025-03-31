@@ -34,9 +34,8 @@ public class Service {
                 } catch (Exception e) {
                     countryCode = availableLocale.getCountry();
                 }
-        }
             }
-
+        }
 
     }
 
@@ -65,7 +64,7 @@ public class Service {
             e.printStackTrace();
         }
         JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
-        System.out.println(jsonObject);
+
         return (jsonObject.getAsJsonObject("conversion_rates").get(currencyCode).getAsDouble());
     }
 
@@ -86,7 +85,6 @@ public class Service {
         }
         JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
         JsonArray jsonArray = jsonObject.getAsJsonArray("rates");
-        System.out.println(jsonArray);
         return jsonArray.getAsJsonArray().get(0).getAsJsonObject().get("mid").getAsDouble();
 
     }
