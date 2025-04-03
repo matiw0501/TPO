@@ -1,10 +1,8 @@
-/**
+package zad1; /**
  *
  *  @author Wierciński Mateusz S31224
  *
  */
-
-package zad1;
 
 
 import com.google.gson.Gson;
@@ -12,7 +10,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Currency;
@@ -27,7 +24,6 @@ public class Service {
         this.countryName = countryName;
         try {
             for (Locale availableLocale : Locale.getAvailableLocales()) {
-//                System.out.println(availableLocale.getDisplayCountry() + " " + availableLocale.getCountry() + " " + Currency.getInstance(availableLocale).getCurrencyCode());
                 if (availableLocale.getDisplayCountry(Locale.ENGLISH).equals(countryName)) {
                     try {
                         currencyCode = Currency.getInstance(availableLocale).getCurrencyCode();
@@ -56,7 +52,6 @@ public class Service {
         catch(Exception e){
             throw new RuntimeException("getWeather failed");
         }
-        System.out.println(json);
         return json;
     }
 
@@ -80,7 +75,7 @@ public class Service {
     }
 
     public double getNBPRate(){
-        System.out.println(currencyCode);
+
         if (currencyCode.equals("PLN")) {
             return 1.0;
         }
@@ -99,4 +94,9 @@ public class Service {
         return jsonArray.getAsJsonArray().get(0).getAsJsonObject().get("mid").getAsDouble();
     }
 
-}  
+    public static void main(String[] args) {
+
+    }
+
+
+}

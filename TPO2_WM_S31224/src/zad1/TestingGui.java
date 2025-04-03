@@ -1,7 +1,6 @@
 package zad1;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -10,7 +9,6 @@ import javafx.scene.web.WebView;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ServiceConfigurationError;
 
 public class TestingGui extends JFrame {
     private JPanel mainPanel;
@@ -189,24 +187,13 @@ public class TestingGui extends JFrame {
 
 
 
-
-
-
-    public static void main(String[] args) {
-        // ...
-        // część uruchamiająca GUI
-
-        SwingUtilities.invokeLater(TestingGui::new);
-
-    }
-
 }
 
 class Weather{
-    Main main;
+    Mainy main;
 }
 
-class Main{
+class Mainy {
     double temp;
     double feels_like;
     double temp_min;
