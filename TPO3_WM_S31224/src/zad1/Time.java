@@ -55,7 +55,7 @@ public class Time {
 
         stringBuilder.append("Od ").append(fromLocalDateTime.format(dateFormatter)).append(" godz. ").append(fromLocalDateTime.format(timeFormatter))
                         .append(" do ").append(toLocalDateTime.format(dateFormatter)).append(" godz. ").append(toLocalDateTime.format(timeFormatter)).append("\n")
-                        .append(" - mija: ").append(day).append(" ").append((wordsForm(day, daysForm))).append(", tygodni ").append(decimalFormat.format((day/7.0))).append("\n")
+                        .append(" - mija: ").append(day).append(" ").append((wordsForm(day, daysForm))).append(", tygodni ").append(decimalFormat.format((day/7.0)).replace(",", ".")).append("\n")
                         .append(" - godzin: ").append(hour).append(", minut: ").append(min).append("\n")
                         .append(" - kalendarzowo: ").append(formatPeriod(period));
 
@@ -74,7 +74,7 @@ public class Time {
 
         if (day > 0) {
             stringBuilder.append(" - mija ").append(day).append(" ").append(wordsForm(day, daysForm)).append(", tygodni ")
-                    .append(decimalFormat.format( (day/7.0))).append("\n").append(" - kalendarzowo: ").append(formatPeriod(period));
+                    .append(decimalFormat.format( (day/7.0)).replace(",", ".")).append("\n").append(" - kalendarzowo: ").append(formatPeriod(period));
         }
         else {
             stringBuilder.append(" - mija: 0 dni, tygodni: 0\n - godzin: 0, minut: 0");
