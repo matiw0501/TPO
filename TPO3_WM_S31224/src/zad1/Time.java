@@ -33,9 +33,9 @@ public class Time {
             } catch (DateTimeException ex) {
                 String[] arr = to.split("-").clone();
                 if (!(Integer.parseInt(arr[0]) % 4 == 0) && Integer.parseInt(arr[1]) == 2 && !arr[2].contains("T") && Integer.parseInt(arr[2]) == 29) {
-                    return "***" + ex;
+                    return "*** " + ex;
                 }
-                return ("***" + e);
+                return ("*** " + e);
             }
         }
 
@@ -73,7 +73,7 @@ public class Time {
         stringBuilder.append("Od ").append(fromLocalDate.format(dateFormatter)).append(" do ").append(toLocalDate.format(dateFormatter)).append("\n");
 
         if (day > 0) {
-            stringBuilder.append(" - mija ").append(day).append(" ").append(wordsForm(day, daysForm)).append(", tygodni ")
+            stringBuilder.append(" - mija: ").append(day).append(" ").append(wordsForm(day, daysForm)).append(", tygodni ")
                     .append(decimalFormat.format( (day/7.0)).replace(",", ".")).append("\n").append(" - kalendarzowo: ").append(formatPeriod(period));
         }
         else {
