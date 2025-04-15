@@ -46,8 +46,8 @@ public class Time {
     public static String calculateLocalDateTime(String from, String to) {
 
         StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime fromLocalDateTime = LocalDateTime.parse(from);
-        LocalDateTime toLocalDateTime = LocalDateTime.parse(to);
+        ZonedDateTime fromLocalDateTime = ZonedDateTime.of(LocalDateTime.parse(from), ZoneId.of("Europe/Warsaw"));
+        ZonedDateTime toLocalDateTime = ZonedDateTime.of(LocalDateTime.parse(to), ZoneId.of("Europe/Warsaw"));
         long day = ChronoUnit.DAYS.between(fromLocalDateTime, toLocalDateTime);
         long hour = Duration.between(fromLocalDateTime, toLocalDateTime).toHours();
         long min = Duration.between(fromLocalDateTime, toLocalDateTime).toMinutes();
