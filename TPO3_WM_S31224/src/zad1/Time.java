@@ -48,7 +48,7 @@ public class Time {
         StringBuilder stringBuilder = new StringBuilder();
         ZonedDateTime fromLocalDateTime = ZonedDateTime.of(LocalDateTime.parse(from), ZoneId.of("Europe/Warsaw"));
         ZonedDateTime toLocalDateTime = ZonedDateTime.of(LocalDateTime.parse(to), ZoneId.of("Europe/Warsaw"));
-        long day = ChronoUnit.DAYS.between(fromLocalDateTime, toLocalDateTime);
+        long day = ChronoUnit.DAYS.between(fromLocalDateTime.toLocalDate(), toLocalDateTime.toLocalDate());
         long hour = Duration.between(fromLocalDateTime, toLocalDateTime).toHours();
         long min = Duration.between(fromLocalDateTime, toLocalDateTime).toMinutes();
         Period period = Period.between(fromLocalDateTime.toLocalDate(),toLocalDateTime.toLocalDate());
