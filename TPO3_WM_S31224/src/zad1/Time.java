@@ -1,11 +1,14 @@
 /**
- * @author Wierciński Mateusz S31224
+ *
+ *  @author Wierciński Mateusz S31224
+ *
  */
 
 package zad1;
 
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -15,7 +18,8 @@ import java.util.Locale;
 
 public class Time {
 
-    private static final DecimalFormat decimalFormat = new DecimalFormat("#.##");
+    private static final DecimalFormat decimalFormat = new DecimalFormat("#.##", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy (EEEE)", new Locale("pl"));
     private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private static final String[] daysForm = {"dzień", "dni", "dni"};
@@ -23,23 +27,12 @@ public class Time {
     private static final String[] yearsForm = {"rok", "lata", "lat"};
 
     public static String passed(String from, String to) {
-        LocalDateTime localDateTime = null;
-        LocalDate localDate = null;
         try {
-            return calculateLocalDateTime(from, to);
+            if (from.contains("T") && to.contains("T")) return calculateLocalDateTime(from, to);
+            return calculateLocalDate(from, to);
         } catch (DateTimeParseException e) {
-            try {
-                return calculateLocalDate(from, to);
-            } catch (DateTimeException ex) {
-                String[] arr = to.split("-").clone();
-                if (!(Integer.parseInt(arr[0]) % 4 == 0) && Integer.parseInt(arr[1]) == 2 && !arr[2].contains("T") && Integer.parseInt(arr[2]) == 29) {
-                    return "*** " + ex;
-                }
-                return ("*** " + e);
-            }
+            return "*** " + e;
         }
-
-
     }
 
 
@@ -53,12 +46,16 @@ public class Time {
         long min = Duration.between(fromLocalDateTime, toLocalDateTime).toMinutes();
         Period period = Period.between(fromLocalDateTime.toLocalDate(),toLocalDateTime.toLocalDate());
 
-        stringBuilder.append("Od ").append(fromLocalDateTime.format(dateFormatter)).append(" godz. ").append(fromLocalDateTime.format(timeFormatter))
-                        .append(" do ").append(toLocalDateTime.format(dateFormatter)).append(" godz. ").append(toLocalDateTime.format(timeFormatter)).append("\n")
-                        .append(" - mija: ").append(day).append(" ").append((wordsForm(day, daysForm))).append(", tygodni ").append(decimalFormat.format((day/7.0)).replace(",", ".")).append("\n")
-                        .append(" - godzin: ").append(hour).append(", minut: ").append(min).append("\n")
-                        .append(" - kalendarzowo: ").append(formatPeriod(period));
 
+        stringBuilder.append("Od ").append(fromLocalDateTime.format(dateFormatter)).append(" godz. ").append(fromLocalDateTime.format(timeFormatter))
+                .append(" do ").append(toLocalDateTime.format(dateFormatter)).append(" godz. ").append(toLocalDateTime.format(timeFormatter)).append("\n")
+                .append(" - mija: ").append(day).append(" ").append((wordsForm(day, daysForm))).append(", tygodni ").append(decimalFormat.format((day/7.0))).append("\n")
+                .append(" - godzin: ").append(hour).append(", minut: ").append(min);
+
+
+        if(day>0) {
+            stringBuilder.append("\n - kalendarzowo: "+formatPeriod(period));
+        }
         return stringBuilder.toString();
     }
 
@@ -74,7 +71,7 @@ public class Time {
 
         if (day > 0) {
             stringBuilder.append(" - mija: ").append(day).append(" ").append(wordsForm(day, daysForm)).append(", tygodni ")
-                    .append(decimalFormat.format( (day/7.0)).replace(",", ".")).append("\n").append(" - kalendarzowo: ").append(formatPeriod(period));
+                    .append(decimalFormat.format( (day/7.0))).append("\n").append(" - kalendarzowo: ").append(formatPeriod(period));
         }
         else {
             stringBuilder.append(" - mija: 0 dni, tygodni: 0\n - godzin: 0, minut: 0");
@@ -116,3 +113,4 @@ public class Time {
 
 
 }
+
