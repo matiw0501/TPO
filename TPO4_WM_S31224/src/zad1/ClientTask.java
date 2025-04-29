@@ -3,42 +3,33 @@ package zad1;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class ClientTask implements Runnable {
+public class ClientTask extends FutureTask<String> {
 
-    private final Client client;
-    private final List<String> requests;
-    private final boolean showResponses;
-    private final CompletableFuture<String> result = new CompletableFuture<>();
 
-    private ClientTask(Client client, List<String> requests, boolean showResponses) {
-        this.client = client;
-        this.requests = requests;
-        this.showResponses = showResponses;
+
+    public static ClientTask create(Client c, List<String> reqs, boolean showRes) {
+       Callable<String> code = () -> {
+           String log  = "log is empty";
+           c.connect();
+           c.send("login " + c.getId());
+           try{
+               for(String req : reqs){
+                   if (Thread.interrupted()) return "interrupted";
+                   String res = c.send(req);
+                   if (showRes) System.out.println(res);
+               }
+               log = c.send("bye and log transfer");
+           }    catch (Exception e){
+               return "interrupted";
+           }
+           return log;
+        };
+       return new ClientTask(code);
+    }
+    public ClientTask(Callable<String> code) {
+        super(code);
     }
 
-    public static ClientTask create(Client client, List<String> requests, boolean showResponses) {
-        return new ClientTask(client, requests, showResponses);
-    }
 
-    @Override
-    public void run() {
-        try {
-            client.connect();
-            client.send("login " + client.getId());
-            for (String req : requests) {
-                String res = client.send(req);
-                if (showResponses) {
-                    System.out.println(res);
-                }
-            }
-            String log = client.send("bye and log transfer");
-            result.complete(log);
-        } catch (Exception e) {
-            result.completeExceptionally(e);
-        }
-    }
 
-    public String get() throws InterruptedException, ExecutionException {
-        return result.get();
-    }
 }
