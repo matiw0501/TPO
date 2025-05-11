@@ -16,8 +16,11 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.util.Iterator;
-import java.util.Set;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -111,6 +114,9 @@ public class ChatServer implements Runnable {
     Charset charset = Charset.forName("UTF-8");
     ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
     StringBuffer serverLog = new StringBuffer();
+    Map<SocketChannel, String> channelMap = new HashMap<>();
+    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+
     public void serviceRequest(SocketChannel socketChannel) throws IOException {
         if (!socketChannel.isOpen()) {
             return;
@@ -123,11 +129,43 @@ public class ChatServer implements Runnable {
         byteBuffer.flip();
         CharBuffer charBuffer = charset.decode(byteBuffer);
         String request = charBuffer.toString();
-        String response;
-
-
+        String message;
+        if (request.contains("logged in") && !channelMap.containsKey(socketChannel)) {
+            String[] splits = request.split("\\s+");
+            channelMap.put(socketChannel, splits[0]);
+            message = splits[0] + " logged in ";
+            serverLog.append(LocalTime.now().format(timeFormatter) + " " + message + "\n");
+            forMap(channelMap,message);
+        } else if (request.contains("logged out") && request.contains(serverSocketChannel.getLocalAddress().toString())) { //pomysl nad tym jak zabezpieczyc wylogowywanie sie wiadomoscia
+            message = channelMap.get(socketChannel) + " logged out";
+            serverLog.append(LocalTime.now().format(timeFormatter) + " " + message + "\n");
+            forMap(channelMap,message);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            channelMap.remove(socketChannel);
+        } else {
+            message = request;
+            serverLog.append(LocalTime.now().format(timeFormatter) + " " + channelMap.get(socketChannel) + ": " + message + "\n");
+            forMap(channelMap,channelMap.get(socketChannel)+": " +message);
+        }
     }
+        private void forMap(Map<SocketChannel, String> map, String response) throws IOException {
+            for(SocketChannel socketChannel : map.keySet()){
+                writeResponse(response,socketChannel);
+            }
+        }
+
+
     public String getServerLog(){
-        return "aGetServer";
+        return serverLog.toString();
+    }
+    public void writeResponse(String response, SocketChannel socketChannel) throws IOException {
+        ByteBuffer byteBuffer = charset.encode(response);
+        while (byteBuffer.hasRemaining()) {
+            socketChannel.write(byteBuffer);
+        }
     }
 }

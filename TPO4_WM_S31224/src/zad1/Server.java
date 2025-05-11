@@ -125,7 +125,6 @@ public class Server implements Runnable {
     private Selector selector = null;
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-
     public Server(String host, int port) throws IOException {
 
             serverSocketChannel  = ServerSocketChannel.open();
@@ -133,6 +132,7 @@ public class Server implements Runnable {
             serverSocketChannel.socket().bind(new InetSocketAddress(host, port));
             selector = Selector.open();
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
 
 
     }
