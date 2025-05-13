@@ -123,7 +123,7 @@ public class Server implements Runnable {
 
     ServerSocketChannel serverSocketChannel = null;
     private Selector selector = null;
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    //private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public Server(String host, int port) throws IOException {
 
@@ -143,7 +143,7 @@ public class Server implements Runnable {
 
     public void stopServer() {
         try{
-            if(executorService != null) executorService.shutdownNow();
+//            if(executorService != null) executorService.shutdownNow();
             if(selector != null) selector.close();
             if(serverSocketChannel != null) {
                 serverSocketChannel.close();

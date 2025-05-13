@@ -76,7 +76,6 @@ public class ChatServer implements Runnable {
 
     private ServerSocketChannel serverSocketChannel;
     private Selector selector;
-    private ExecutorService executorService = Executors.newCachedThreadPool();
     public ChatServer(String host, int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
@@ -92,9 +91,6 @@ public class ChatServer implements Runnable {
 
     public void stopServer(){
         try{
-            if(executorService != null){
-                executorService.shutdownNow();
-            }
             if(selector != null){
                 selector.close();
             }
@@ -129,19 +125,19 @@ public class ChatServer implements Runnable {
         String [] arrayRequests = charBuffer.toString().split("\n");
         String message;
         for (String request : arrayRequests) {
-            if (request.contains("logged in") && !channelMap.containsKey(socketChannel)) {
+            if (request.startsWith("login") && !channelMap.containsKey(socketChannel)) {
                 String[] splits = request.split("\\s+");
-                channelMap.put(socketChannel, splits[0]);
-                message = splits[0] + " logged in ";
+                channelMap.put(socketChannel, splits[1]);
+                message = splits[1] + " logged in ";
                 forMap(channelMap, message);
-            } else if (request.contains("logged out") && request.contains(serverSocketChannel.getLocalAddress().toString())) { //pomysl nad tym jak zabezpieczyc wylogowywanie sie wiadomoscia
+            } else if (request.startsWith("logout") && request.contains(serverSocketChannel.getLocalAddress().toString())) { //pomysl nad tym jak zabezpieczyc wylogowywanie sie wiadomoscia
                 message = channelMap.get(socketChannel) + " logged out";
                 forMap(channelMap, message);
-                try {
-                    Thread.sleep(0);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    Thread.sleep(0);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
                 channelMap.remove(socketChannel);
             } else {
                 message = request;
@@ -162,7 +158,6 @@ public class ChatServer implements Runnable {
     public void writeResponse(String response, SocketChannel socketChannel) throws IOException {
         ByteBuffer byteBuffer = charset.encode(response);
         while (byteBuffer.hasRemaining()) {
-
             socketChannel.write(byteBuffer);
         }
     }

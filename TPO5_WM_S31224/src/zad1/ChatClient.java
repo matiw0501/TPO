@@ -15,6 +15,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
 
 public class ChatClient {
     String host;
@@ -43,7 +44,7 @@ public class ChatClient {
                     e.printStackTrace();
                 }
             }
-            send(id + " logged in ");
+            send( "login " + id);
         }
         catch (IOException e){
             e.printStackTrace();
@@ -52,17 +53,18 @@ public class ChatClient {
 
     public void logout(){
         try {
-            send(id + " logged out" + socket.getRemoteAddress().toString() ); //jak sie sypnie to sprawdz
-            try {
-                Thread.sleep(10); // zamiast tego powinna byc jakas logika blokowania dopoki listener (albo serwer) nie spelni swoich zadan
-            }                              // czyli jak serwer skonczy swoje zadania to dodaje zadanie do listenera i dopeiro jak listener wypelni je wszystkie to moze sie zamknac
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            send("logout" + id +  " " + socket.getRemoteAddress().toString() ); //jak sie sypnie to sprawdz
+            Thread.sleep(100);
             listener.interrupt();
+            try {
+                listenerDone.await(); //sprawdzaj czy jest lock jak nie to ogien z ... jak tak to jakis nie kosztowny sposob na waita (nie udało sie, zapytaj)
+            }
+            catch (InterruptedException e) {
+               listener.interrupt();
+            }
             socket.close();
         }
-        catch (IOException e){
+        catch (Exception e){
             e.printStackTrace();
         }
     }
@@ -72,35 +74,39 @@ public class ChatClient {
     public void send(String req){
         ByteBuffer buffer = charset.encode(req+"\n");
         try{
-            socket.write(buffer);
-          //  System.out.println("sending " + req); // do komenta
-        }
+            socket.write(buffer);}
         catch (Exception e){
             e.printStackTrace();
         }
     }
 
+    CountDownLatch listenerDone = new CountDownLatch(1);
+    volatile  boolean interrupted = false;
     Thread listener = new Thread(new Runnable() {
         public void run() {
             ByteBuffer readBuffer = ByteBuffer.allocate(1024);
             while(socket.isOpen()){
-
+                //lock
                 if (Thread.interrupted()) {
-                    break;
+                    interrupted = true;
                 }
-
-
                 try {
                     readBuffer.clear();
                     int n = socket.read(readBuffer);
                     if (n == -1) {
                         System.out.println("end of stream");
+                        //unlock
                         break;
                     }
                     if(n>0){
                         readBuffer.flip();
                         CharBuffer charBuffer = charset.decode(readBuffer);
                         clientLog.append(charBuffer+"\n");
+                        //unlock
+                    }
+
+                    if (interrupted) {
+                        break;
                     }
                     //System.out.println("ebebe");
                     //Thread.sleep(0);
@@ -109,6 +115,7 @@ public class ChatClient {
                     ex.printStackTrace();
                 }
             }
+            listenerDone.countDown();
         }
     });
 
