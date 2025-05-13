@@ -16,8 +16,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -128,36 +126,35 @@ public class ChatServer implements Runnable {
         }
         byteBuffer.flip();
         CharBuffer charBuffer = charset.decode(byteBuffer);
-        String request = charBuffer.toString();
+        String [] arrayRequests = charBuffer.toString().split("\n");
         String message;
-        if (request.contains("logged in") && !channelMap.containsKey(socketChannel)) {
-            String[] splits = request.split("\\s+");
-            channelMap.put(socketChannel, splits[0]);
-            message = splits[0] + " logged in ";
-            serverLog.append(LocalTime.now().format(timeFormatter) + " " + message + "\n");
-            forMap(channelMap,message);
-        } else if (request.contains("logged out") && request.contains(serverSocketChannel.getLocalAddress().toString())) { //pomysl nad tym jak zabezpieczyc wylogowywanie sie wiadomoscia
-            message = channelMap.get(socketChannel) + " logged out";
-            serverLog.append(LocalTime.now().format(timeFormatter) + " " + message + "\n");
-            forMap(channelMap,message);
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        for (String request : arrayRequests) {
+            if (request.contains("logged in") && !channelMap.containsKey(socketChannel)) {
+                String[] splits = request.split("\\s+");
+                channelMap.put(socketChannel, splits[0]);
+                message = splits[0] + " logged in ";
+                forMap(channelMap, message);
+            } else if (request.contains("logged out") && request.contains(serverSocketChannel.getLocalAddress().toString())) { //pomysl nad tym jak zabezpieczyc wylogowywanie sie wiadomoscia
+                message = channelMap.get(socketChannel) + " logged out";
+                forMap(channelMap, message);
+                try {
+                    Thread.sleep(0);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                channelMap.remove(socketChannel);
+            } else {
+                message = request;
+                forMap(channelMap, channelMap.get(socketChannel) + ": " + message);
             }
-            channelMap.remove(socketChannel);
-        } else {
-            message = request;
-            serverLog.append(LocalTime.now().format(timeFormatter) + " " + channelMap.get(socketChannel) + ": " + message + "\n");
-            forMap(channelMap,channelMap.get(socketChannel)+": " +message);
         }
     }
         private void forMap(Map<SocketChannel, String> map, String response) throws IOException {
+            serverLog.append(LocalTime.now().format(timeFormatter) + " " + response + "\n");
             for(SocketChannel socketChannel : map.keySet()){
                 writeResponse(response,socketChannel);
             }
         }
-
 
     public String getServerLog(){
         return serverLog.toString();
@@ -165,7 +162,10 @@ public class ChatServer implements Runnable {
     public void writeResponse(String response, SocketChannel socketChannel) throws IOException {
         ByteBuffer byteBuffer = charset.encode(response);
         while (byteBuffer.hasRemaining()) {
+
             socketChannel.write(byteBuffer);
         }
     }
+
+
 }

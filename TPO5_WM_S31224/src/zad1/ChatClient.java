@@ -34,6 +34,7 @@ public class ChatClient {
             socket = SocketChannel.open();
             socket.configureBlocking(false);
             socket.connect(new InetSocketAddress(host, port));
+            listener.start();
             while (!socket.finishConnect()) {
                 try {
                     Thread.sleep(10);
@@ -42,8 +43,7 @@ public class ChatClient {
                     e.printStackTrace();
                 }
             }
-            listener.start();
-            send(id + " logged in");
+            send(id + " logged in ");
         }
         catch (IOException e){
             e.printStackTrace();
@@ -54,8 +54,8 @@ public class ChatClient {
         try {
             send(id + " logged out" + socket.getRemoteAddress().toString() ); //jak sie sypnie to sprawdz
             try {
-                Thread.sleep(10);
-            }
+                Thread.sleep(10); // zamiast tego powinna byc jakas logika blokowania dopoki listener (albo serwer) nie spelni swoich zadan
+            }                              // czyli jak serwer skonczy swoje zadania to dodaje zadanie do listenera i dopeiro jak listener wypelni je wszystkie to moze sie zamknac
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -70,9 +70,10 @@ public class ChatClient {
     private Charset charset = StandardCharsets.UTF_8;
 
     public void send(String req){
-        ByteBuffer buffer = charset.encode(req);
+        ByteBuffer buffer = charset.encode(req+"\n");
         try{
             socket.write(buffer);
+          //  System.out.println("sending " + req); // do komenta
         }
         catch (Exception e){
             e.printStackTrace();
@@ -102,13 +103,10 @@ public class ChatClient {
                         clientLog.append(charBuffer+"\n");
                     }
                     //System.out.println("ebebe");
-                    Thread.sleep(0);
+                    //Thread.sleep(0);
                 }
-                catch (Exception e) {
-                    //System.out.println("error");
-                    //e.printStackTrace();
-                    break;
-                    //interuptuje aby przestal sluchac
+                catch (IOException ex){
+                    ex.printStackTrace();
                 }
             }
         }
